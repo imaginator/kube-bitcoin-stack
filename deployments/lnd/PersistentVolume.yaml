@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bitcoin-pv-filesystem-lnd
+  namespace: openlsp
+spec:
+  capacity:
+    storage: 10Gi
+  hostPath:
+    path: /srv/k8s/pv/lnd
+    type: ''
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem

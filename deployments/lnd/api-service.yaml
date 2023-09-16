@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lnd
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: lnd
+spec:
+  type: ClusterIP
+  ports:
+    - name: rpc
+      port: 10009
+    - name: rest
+      port: 8080
+  selector:
+    app.kubernetes.io/name: lnd
+    

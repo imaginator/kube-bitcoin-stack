@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bitcoind
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: bitcoind
+data:
+  bitcoin.conf: |-
+    debug=mempool
+    debug=rpc
+    shrinkdebugfile=1
+    server=1
+    txindex=1
+    printtoconsole=1
+    rpcuser=rpcuser
+    zmqpubrawtx=tcp://0.0.0.0:28333
+    zmqpubrawblock=tcp://0.0.0.0:28332
+    blockfilterindex=1
+    bind=0.0.0.0
+    rpcallowip=0.0.0.0/0
+    rpcbind=0.0.0.0
+    disable-wallet=1

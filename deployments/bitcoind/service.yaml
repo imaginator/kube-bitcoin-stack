@@ -1,0 +1,25 @@
+---
+# Source: bitcoind/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: bitcoind
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: bitcoind
+    release: kube-prom-stack
+spec:
+  type: ClusterIP
+  ports:
+    - name: rpc
+      port: 8332
+    - name: p2p
+      port: 8333
+    - name: zmqpubrawtx
+      port: 28333
+    - name: zmqpubrawblock
+      port: 28332
+    - name: metrics
+      port: 3000
+  selector:
+    app.kubernetes.io/name: bitcoind

@@ -1,0 +1,176 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lnd
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: lnd
+spec:
+  serviceName: lnd
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lnd
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      annotations:
+        checksum/config: 29d416b0f1fcc413a9da85da2b6d262576a90ee1db556471fb49995db472d1de
+        checksum/exportSecrets: 5addf97cb8a0fa4d6017b5327834d9e99516395da3271b785c3ecb7cb80534cd
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9092"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/name: lnd
+        app.kubernetes.io/instance: release-name
+    spec:
+      serviceAccountName: lnd
+      terminationGracePeriodSeconds: 600
+      initContainers:
+        - name: copy-lnd-config
+          image: "lightninglabs/lnd:v0.16.2-beta"
+          command:
+          - 'sh'
+          - '-c'
+          - |
+            cat <<EOF > /root/.lnd/lnd.conf
+            bitcoind.rpcpass=$(cat /rpcpassword/password)
+            $(cat /configmap/lnd.conf)
+            EOF
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: config
+              mountPath: /root/.lnd/
+            - name: rpcpassword
+              mountPath: /rpcpassword
+      containers:
+        - name: tor
+          image: osminogin/tor-simple
+          securityContext:
+            runAsUser: 100
+          command: ['/bin/sh']
+          volumeMounts:
+          - name: tor-cookie-auth
+            mountPath: /var/lib/tor/auth
+          args:
+          - '-c'
+          - |
+            sed 's/SocksPort 0.0.0.0:9050/SocksPort 127.0.0.1:9050/g' /etc/tor/torrc > ~/torrc
+            cat <<EOF > ~/torrc
+            ControlPort 9051
+            CookieAuthentication 1
+            CookieAuthFile /var/lib/tor/auth/cookie
+            CookieAuthFileGroupReadable 1
+            $(cat ~/torrc)
+            EOF
+            exec tor -f ~/torrc
+        - name: export-secrets
+          image: "us.gcr.io/galoy-org/lnd-sidecar@sha256:e3ad153f0fe8dc8418c0e0c3cc6baf74ecc2a6b7c1436a6154e52330eb02167f"
+          command: ['/bin/sh']
+          args:
+          - '-c'
+          - |
+            lncli -n=$NETWORK getinfo
+            while [[ $? != 0 ]]; do sleep 1; lncli -n=$NETWORK getinfo; done
+            /home/alpine/exportSecrets.sh
+            trap "echo shutting down; exit 0" SIGKILL SIGTERM
+            while true; do sleep 1; done
+          env:
+          - name: NETWORK
+            valueFrom:
+              secretKeyRef:
+                name: network
+                key: network
+          volumeMounts:
+          - name: export-secrets
+            mountPath: /home/alpine/exportSecrets.sh
+            subPath: exportSecrets.sh
+          - name: lnd-storage
+            mountPath: /root/.lnd
+        - name: lnd
+          image: "lightninglabs/lnd:v0.16.2-beta"
+          ports:
+            - name: rpc
+              containerPort: 10009
+            - name: p2p
+              containerPort: 9735
+            - name: rest
+              containerPort: 8080
+          volumeMounts:
+            - name: tor-cookie-auth
+              mountPath: /var/lib/tor/auth
+            - name: lnd-storage
+              mountPath: /root/.lnd
+            - name: config
+              mountPath: /root/.lnd/lnd.conf
+              subPath: lnd.conf
+            - name: lnd-password
+              mountPath: /tmp/lnd-pass
+              subPath: password
+          startupProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - "lncli -n mainnet state | grep -q SERVER_ACTIVE"
+            failureThreshold: 540
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - "lncli -n mainnet state | grep -q SERVER_ACTIVE"
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - "lncli -n mainnet state | grep -q SERVER_ACTIVE"
+            periodSeconds: 5
+            failureThreshold: 3
+            initialDelaySeconds: 600
+            timeoutSeconds: 10
+          resources:
+            {}
+      volumes:
+        - name: wallet-init
+          configMap:
+            name: lnd-wallet-init
+            defaultMode: 0777
+        - name: export-secrets
+          configMap:
+            name: lnd-export-secrets
+            defaultMode: 0777
+        - name: config
+          emptyDir: {}
+        - name: rpcpassword
+          secret:
+            secretName: bitcoind-rpcpassword
+        - name: configmap
+          configMap:
+            name: lnd
+        - name: lnd-password
+          secret:
+            secretName: lnd-pass
+        - name: lnd-storage
+          persistentVolumeClaim:
+            claimName: bitcoin-pvc-lnd
+        - name: tor-cookie-auth
+          emptyDir: {}
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - bitcoind
+              topologyKey: kubernetes.io/hostname
+            weight: 100

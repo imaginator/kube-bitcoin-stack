@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bitcoin-pvc-lnd
+  namespace: openlsp
+spec:
+  storageClassName: "microk8s-hostpath"
+  volumeName: bitcoin-pv-filesystem-lnd
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "10Gi"

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bitcoin-pv-filesystem-bitcoind
+  namespace: openlsp
+spec:
+  capacity:
+    storage: 750Gi
+  hostPath:
+    path: /srv/blockchain
+    type: ''
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem

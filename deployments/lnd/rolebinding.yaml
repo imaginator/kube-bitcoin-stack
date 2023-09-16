@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lnd
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: lnd
+roleRef:
+  kind: Role
+  name: lnd
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: lnd
+    namespace: default

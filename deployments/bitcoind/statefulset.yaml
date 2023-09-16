@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bitcoind
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: bitcoind
+spec:
+  serviceName: bitcoind
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bitcoind
+  template:
+    metadata:
+      annotations:
+        checksum/config: 4b3dbe3b2359b67ce4cb1fbfdbe79b40d28e8d96f316268e004c64b67df49419
+        prometheus.io/path: /metrics
+        prometheus.io/port: "3000"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/name: bitcoind
+    spec:
+      serviceAccountName: bitcoind
+      securityContext:
+        fsGroup: 2000
+      initContainers:
+        - name: copy-bitcoind-config
+          image: busybox
+          command:
+          - 'sh'
+          - '-c'
+          - |
+            cat <<EOF > /data/.bitcoin/bitcoin.conf
+            rpcpassword=$(cat /rpcpassword/password)
+            $(cat /configmap/bitcoin.conf)
+            EOF
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+            - name: rpcpassword
+              mountPath: /rpcpassword
+            - name: config
+              mountPath: /data/.bitcoin/
+      containers:
+        - name: bitcoind
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 3000
+            runAsNonRoot: true
+            runAsUser: 1000
+          image: "lncm/bitcoind:v24.0.1"
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: MALLOC_ARENA_MAX
+            value: "1"
+          ports:
+            - name: rpc
+              containerPort: 8332
+            - name: p2p
+              containerPort: 8333
+            - name: zmqpubrawtx
+              containerPort: 28333
+            - name: zmqpubrawblock
+              containerPort: 28332
+          volumeMounts:
+            - name: data
+              mountPath: /data/.bitcoin
+            - name: config
+              mountPath: /data/.bitcoin/bitcoin.conf
+              subPath: bitcoin.conf
+          startupProbe:
+            exec:
+              command:
+              - bitcoin-cli
+              - -conf=/data/.bitcoin/bitcoin.conf
+              - getblockchaininfo
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+              - bitcoin-cli
+              - -conf=/data/.bitcoin/bitcoin.conf
+              - getblockchaininfo
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 6
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+              - bitcoin-cli
+              - -conf=/data/.bitcoin/bitcoin.conf
+              - getblockchaininfo
+            periodSeconds: 10
+            successThreshold: 6
+            timeoutSeconds: 10
+          resources:
+            {}
+        - name: exporter
+          image: jvstein/bitcoin-prometheus-exporter:v0.6.0
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: BITCOIN_RPC_HOST
+            value: 127.0.0.1
+          - name: BITCOIN_RPC_USER
+            value: rpcuser
+          - name: BITCOIN_RPC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: bitcoind-rpcpassword
+                key: password
+          - name: METRICS_PORT
+            value: "3000"
+          - name: BITCOIN_RPC_PORT
+            value: "8332"
+          ports:
+          - name: metrics
+            containerPort: 3000
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: metrics
+          readinessProbe:
+            httpGet:
+              path: /
+              port: metrics
+      volumes:
+        - name: config
+          emptyDir: {}
+        - name: rpcpassword
+          secret:
+            secretName: bitcoind-rpcpassword
+        - name: configmap
+          configMap:
+            name: bitcoind
+        - name: data
+          persistentVolumeClaim:
+            claimName: bitcoin-pvc-bitcoind

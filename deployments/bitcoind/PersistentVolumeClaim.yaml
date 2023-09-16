@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bitcoin-pvc-bitcoind
+  namespace: openlsp
+spec:
+  storageClassName: ""
+  volumeName: bitcoin-pv-filesystem-bitcoind
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "750Gi"
+
