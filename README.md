@@ -70,20 +70,7 @@ sudo mount -a
 
 All services are deployed into the `openlsp` namespace.
 
-
-
-.s
-/etc/containers/registry.conf
-
-unqualified-search-registries=["docker.io"]
-
-Todo:
-
-- write up docs on moving home directory to larger disk (since KinD / minikube use home dir for images)
-- create a partition to protect against disk full issues causing wallets to close channels
- 
-
-### boot options
+### Boot Options
 
 Most Pi distros don't ship with cgroups enabled. This is required for Kubernetes to work. In `/boot/firmware/cmdline.txt` and add the following settings at the end of the line, not in a new line, but at the end of the first line:
 
@@ -110,7 +97,7 @@ microk8s enable dns ingress observability cert-manager hostpath-storage
 ```
 
 ### Configure kubectl
-  
+
 ```bash
 microk8s config > ~/.kube/config
 # add the following to ~/.bashrc
@@ -127,10 +114,10 @@ kubectl get pods --all-namespaces
 
 ### Add a recent blockchain copy
 
-Save time by copying the blockchain from another node. You will need `block` `chainstate` and `indexes` directories.
+Save time by copying the blockchain from another node. You will need `block`, `chainstate` and `indexes` directories.
 
 ```bash
-rsync  -av --delete --dry-run blocks indexes chainstate   username@lspnode:/srv/blockchain/
+rsync -av --delete --dry-run blocks indexes chainstate username@lspnode:/srv/blockchain/
 ```
 
 
@@ -138,8 +125,13 @@ rsync  -av --delete --dry-run blocks indexes chainstate   username@lspnode:/srv/
 
 ```bash
 microk8s config > ~/.kube/config
-sudo snap remove microk8s  
+# copy the config to your local machine
+
+# add the following to ~/.zshrc or .bashrc as appropriate
+source <(kubectl completion zsh)
+source <(kubectl completion bash)
 ```
+alternatively [Lens](https://docs.k8slens.dev/) makes a nice Kubernetes GUI
 
 ### Configure observability
 
@@ -148,11 +140,11 @@ get the grafana password with
 kubectl -n observability get secrets kube-prom-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo 
 ```
 
-Watch it with
+Watch it with:
 ```bash
-kubectl port-forward -n observability  services/kube-prom-stack-grafana --address 0.0.0.0 3000:80 # grafana
+kubectl port-forward -n observability services/kube-prom-stack-grafana --address 0.0.0.0 3000:80 # grafana
 
-kubectl port-forward -n observability  service/prometheus-k8s --address 0.0.0.0 9090 # prometheus
+kubectl port-forward -n observability service/prometheus-k8s --address 0.0.0.0 9090 # prometheus
 ```
 
 ### Cluster health
@@ -170,3 +162,34 @@ kubectl apply -f deployments/namespace
 kubectl apply -f deployments/bitcoind
 kubectl apply -f deployments/lnd
 ```
+### Security
+
+Assume none. This is not designed to be used in production or hold more than test funds.
+
+### Secrets management
+
+The following secrets are required for the services to work:
+
+- lnd-tls.cert
+- lnd-admin.macaroon
+- lnd-read-only.macaroon
+- lnd-invoice.macaroon
+- lnd-signer.macaroon
+- lnd-chain-notifier.macaroon
+- lnd-walletkit.macaroon
+- lnd-backup.macaroon
+- lnd-readonly.macaroon
+- bitcoind-rpc.cert
+- bitcoind-rpc.cookie
+- bitcoind-rpc.username
+- bitcoind-rpc.password
+- bitcoind-zmqpubrawblock
+- bitcoind-zmqpubrawtx
+- bitcoind-zmqpubhashtx
+- bitcoind-zmqpubhashblock
+
+
+Todo: 
+
+bitcoind ingress - permit inbound connections
+lnd ingress - permit inbound connections
