@@ -8,10 +8,10 @@ metadata:
     app.kubernetes.io/name: lnd
 spec:
   serviceName: lnd
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: lnd
-      app.kubernetes.io/instance: release-name
   template:
     metadata:
       annotations:
@@ -22,13 +22,12 @@ spec:
         prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: lnd
-        app.kubernetes.io/instance: release-name
     spec:
       serviceAccountName: lnd
       terminationGracePeriodSeconds: 600
       initContainers:
         - name: copy-lnd-config
-          image: "lightninglabs/lnd:v0.16.2-beta"
+          image: "lightninglabs/lnd:v0.17.0-beta.rc6"
           command:
           - 'sh'
           - '-c'
@@ -40,10 +39,10 @@ spec:
           volumeMounts:
             - name: configmap
               mountPath: /configmap
-            - name: config
-              mountPath: /root/.lnd/
             - name: rpcpassword
               mountPath: /rpcpassword
+            - name: config
+              mountPath: /root/.lnd/
       containers:
         - name: tor
           image: osminogin/tor-simple
@@ -154,12 +153,12 @@ spec:
         - name: configmap
           configMap:
             name: lnd
-        - name: lnd-password
-          secret:
-            secretName: lnd-pass
         - name: lnd-storage
           persistentVolumeClaim:
             claimName: bitcoin-pvc-lnd
+        - name: lnd-password
+          secret:
+            secretName: lnd-pass
         - name: tor-cookie-auth
           emptyDir: {}
       affinity:

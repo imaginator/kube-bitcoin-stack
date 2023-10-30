@@ -4,7 +4,7 @@ metadata:
   name: bitcoin-pvc-lnd
   namespace: openlsp
 spec:
-  storageClassName: "microk8s-hostpath"
+  storageClassName: ""
   volumeName: bitcoin-pv-filesystem-lnd
   accessModes:
     - ReadWriteOnce
