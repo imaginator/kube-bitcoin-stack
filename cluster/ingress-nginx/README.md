@@ -1,4 +1,4 @@
-Install with 
+## Install
 
 ```bash
 helm upgrade --install ingress-nginx ingress-nginx \
@@ -9,18 +9,6 @@ helm upgrade --install ingress-nginx ingress-nginx \
 ## adding additional TCP and UDP services
 
 [reference](https://minikube.sigs.k8s.io/docs/tutorials/nginx_tcp_udp_ingress/)
-
-
-add the configmaps:
-```
-kubectl apply -f ~/Documents/src/openlsp/cluster/nginx-ingress/nginx-tcp-udp-services.yaml
-```
-
-check that the configmaps are created:
-```
-kubectl get configmap -n ingress-nginx
-```
-
 
 edit the ingress-nginx-controller deployment to include the following args:
 ```
@@ -39,6 +27,17 @@ spec:
         - --tcp-services-configmap=ingress-nginx/tcp-services
         - --udp-services-configmap=ingress-nginx/udp-services
 ```
+
+add the configmaps:
+```
+kubectl apply -f ~/Documents/src/openlsp/cluster/ingress-nginx/nginx-tcp-udp-services.yaml
+```
+
+check that the configmaps are created:
+```
+kubectl get configmap -n ingress-nginx -o yanl
+```
+
 
 Finally:
 

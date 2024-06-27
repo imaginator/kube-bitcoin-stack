@@ -3,7 +3,9 @@ spec:
   template:
     spec:
       containers:
-      - name: controller
-        ports:
-         - containerPort: 8333
-           hostPort: 8333
+        - name: controller
+          ports:
+            - containerPort: 8332
+              hostPort: 8332
+            - containerPort: 8333
+              hostPort: 8333
