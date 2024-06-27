@@ -8,15 +8,14 @@ metadata:
     app.kubernetes.io/name: lnd
 spec:
   serviceName: lnd
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: lnd
   template:
     metadata:
       annotations:
-        checksum/config: 29d416b0f1fcc413a9da85da2b6d262576a90ee1db556471fb49995db472d1de
-        checksum/exportSecrets: 5addf97cb8a0fa4d6017b5327834d9e99516395da3271b785c3ecb7cb80534cd
+        checksum/config: 0f9ba154922f46117d2c5017042bec694f8b1e67d19e81591e44e1f46ee065a1
+        checksum/exportSecrets: ee61b70c39c2ffd33588a7f5fd3c8153ce853a2601fa677bea0ac39846e08b15
         prometheus.io/path: /metrics
         prometheus.io/port: "9092"
         prometheus.io/scrape: "true"
@@ -27,7 +26,7 @@ spec:
       terminationGracePeriodSeconds: 600
       initContainers:
         - name: copy-lnd-config
-          image: "lightninglabs/lnd:v0.17.0-beta.rc6"
+          image: "lightninglabs/lnd:v0.16.2-beta"
           command:
           - 'sh'
           - '-c'
@@ -39,10 +38,10 @@ spec:
           volumeMounts:
             - name: configmap
               mountPath: /configmap
-            - name: rpcpassword
-              mountPath: /rpcpassword
             - name: config
               mountPath: /root/.lnd/
+            - name: rpcpassword
+              mountPath: /rpcpassword
       containers:
         - name: tor
           image: osminogin/tor-simple
@@ -90,9 +89,9 @@ spec:
         - name: lnd
           image: "lightninglabs/lnd:v0.16.2-beta"
           ports:
-            - name: rpc
+            - name: grpc
               containerPort: 10009
-            - name: p2p
+            - name: peer
               containerPort: 9735
             - name: rest
               containerPort: 8080
@@ -122,8 +121,8 @@ spec:
               - -c
               - "lncli -n mainnet state | grep -q SERVER_ACTIVE"
             periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 3
-            timeoutSeconds: 10
           livenessProbe:
             exec:
               command:
@@ -131,9 +130,9 @@ spec:
               - -c
               - "lncli -n mainnet state | grep -q SERVER_ACTIVE"
             periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 3
             initialDelaySeconds: 600
-            timeoutSeconds: 10
           resources:
             {}
       volumes:
@@ -153,12 +152,12 @@ spec:
         - name: configmap
           configMap:
             name: lnd
-        - name: lnd-storage
-          persistentVolumeClaim:
-            claimName: bitcoin-pvc-lnd
         - name: lnd-password
           secret:
             secretName: lnd-pass
+        - name: lnd-storage
+          persistentVolumeClaim:
+            claimName: bitcoin-pvc-lnd
         - name: tor-cookie-auth
           emptyDir: {}
       affinity:

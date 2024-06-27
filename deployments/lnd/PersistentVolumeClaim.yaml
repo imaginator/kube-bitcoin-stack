@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: bitcoin-pvc-lnd
+  name: openlsp-pvc-lnd
   namespace: openlsp
 spec:
   storageClassName: ""
-  volumeName: bitcoin-pv-filesystem-lnd
+  volumeName: openlsp-pv-filesystem-lnd
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
