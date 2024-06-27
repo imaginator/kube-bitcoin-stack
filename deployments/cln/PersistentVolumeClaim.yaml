@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openlsp-pvc-cln-server
+  namespace: openlsp
+spec:
+  storageClassName: ""
+  volumeName: openlsp-pv-filesystem-cln-server
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "10Gi"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openlsp-pvc-cln-client
+  namespace: openlsp
+spec:
+  storageClassName: ""
+  volumeName: openlsp-pv-filesystem-cln-client
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: "10Gi"

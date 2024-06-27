@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cln-p2p
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: cln
+spec:
+  type: ClusterIP
+  ports:
+    - name: p2p
+      port: 9735
+  selector:
+    app.kubernetes.io/name: cln
+    app.kubernetes.io/instance: release-name

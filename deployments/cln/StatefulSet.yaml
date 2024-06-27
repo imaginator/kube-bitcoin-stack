@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cln
+  namespace: openlsp
+  labels:
+    app.kubernetes.io/name: cln
+spec:
+  serviceName: cln
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cln
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cln
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: cln-server
+          image: "elementsproject/lightningd:v23.08.1"
+          ports:
+            - name: grpc
+              containerPort: 8383
+            - name: peer
+              containerPort: 9735
+          # start the following command 
+          command: ["/usr/local/bin/lightningd"]
+          stdin: true
+          tty: true
+          # args:
+          #   - --addr=:9736
+          #   - --grpc-port=8383
+          #   - --network=bitcoin
+          #   - --bitcoin-rpcuser=rpcuser
+          #   - --bitcoin-rpcpassword=PylCPVdKqEpQjARmKfIRSoin
+          #   - --bitcoin-rpcconnect=bitcoind
+          #   - --bitcoin-rpcport=8332
+          #   - --bitcoin-retry-timeout=600
+          #   - --database-upgrade=true
+          #   - --log-level=debug
+          volumeMounts:
+            - name: openlsp-pvc-cln-server
+              mountPath: /cln/.lightning
+      volumes:
+        - name: openlsp-pvc-cln-server
+          persistentVolumeClaim:
+            claimName: openlsp-pvc-cln-server
+        - name: openlsp-pvc-cln-client
+          persistentVolumeClaim:
+            claimName: openlsp-pvc-cln-client
