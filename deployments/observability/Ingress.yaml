@@ -1,0 +1,54 @@
+# prometheus
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  namespace: observability
+  annotations:
+    kubernetes.io/spec.ingressClassName: public
+    cert-manager.io/cluster-issuer: lets-encrypt
+spec:
+  tls: 
+    - hosts:
+      - prometheus.ln.imagilan.imaginator.com
+      secretName: prometheus.ln.imagilan.imaginator.com-tls
+  rules:
+  - host: prometheus.ln.imagilan.imaginator.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: kube-prom-stack-kube-prome-prometheus
+            port:
+              name: http-web
+        path: /
+        pathType: ImplementationSpecific
+
+--- 
+# grafana
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: observability
+  annotations:
+    kubernetes.io/spec.ingressClassName: public
+    cert-manager.io/cluster-issuer: lets-encrypt
+spec:
+  tls:
+    - hosts:
+      - grafana.ln.imagilan.imaginator.com
+      secretName: grafana.ln.imagilan.imaginator.com-tls
+  rules:
+  - host: grafana.ln.imagilan.imaginator.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: kube-prom-stack-grafana
+            port:
+              name: http-web
+        path: /
+        pathType: ImplementationSpecific
