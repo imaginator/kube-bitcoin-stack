@@ -8,9 +8,8 @@ spec:
     storage: 750Gi
   hostPath:
     path: /srv/blockchain
-    type: ''
+    type: ""
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
   volumeMode: Filesystem

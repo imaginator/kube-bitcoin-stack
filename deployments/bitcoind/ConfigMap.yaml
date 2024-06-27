@@ -7,17 +7,19 @@ metadata:
     app.kubernetes.io/name: bitcoind
 data:
   bitcoin.conf: |-
+    bind=0.0.0.0
+    blockfilterindex=1
     debug=mempool
     debug=rpc
-    shrinkdebugfile=1
-    server=1
-    txindex=1
+    disable-wallet=1
     printtoconsole=1
-    rpcuser=rpcuser
-    zmqpubrawtx=tcp://0.0.0.0:28333
-    zmqpubrawblock=tcp://0.0.0.0:28332
-    blockfilterindex=1
-    bind=0.0.0.0
     rpcallowip=0.0.0.0/0
     rpcbind=0.0.0.0
-    disable-wallet=1
+    rpcport=8332
+    rpcuser=rpcuser
+    rpcpassword=rpcpassword
+    server=1
+    shrinkdebugfile=1
+    txindex=1
+    zmqpubrawblock=tcp://0.0.0.0:28332
+    zmqpubrawtx=tcp://0.0.0.0:28333

@@ -49,7 +49,7 @@ spec:
             runAsGroup: 3000
             runAsNonRoot: true
             runAsUser: 1000
-          image: "lncm/bitcoind:v24.0.1"
+          image: "lncm/bitcoind:v25.0"
           imagePullPolicy: IfNotPresent
           env:
           - name: MALLOC_ARENA_MAX
