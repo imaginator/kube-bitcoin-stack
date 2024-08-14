@@ -1,10 +1,8 @@
----
-# Source: bitcoind/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: bitcoind
-  namespace: openlsp
+  namespace: bitcoind
   labels:
     app.kubernetes.io/name: bitcoind
     release: kube-prom-stack

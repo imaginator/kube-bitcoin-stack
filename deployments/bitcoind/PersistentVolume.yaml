@@ -2,7 +2,9 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: bitcoin-pv-filesystem-bitcoind
-  namespace: openlsp
+  namespace: bitcoind
+  labels:
+    app.kubernetes.io/name: bitcoind
 spec:
   capacity:
     storage: 750Gi

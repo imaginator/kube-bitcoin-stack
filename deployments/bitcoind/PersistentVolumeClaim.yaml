@@ -2,7 +2,9 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: bitcoin-pvc-bitcoind
-  namespace: openlsp
+  namespace: bitcoind
+  labels:
+    app.kubernetes.io/name: bitcoind 
 spec:
   storageClassName: ""
   volumeName: bitcoin-pv-filesystem-bitcoind
@@ -12,4 +14,3 @@ spec:
   resources:
     requests:
       storage: "750Gi"
-

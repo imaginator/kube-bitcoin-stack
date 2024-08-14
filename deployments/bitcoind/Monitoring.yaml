@@ -1,18 +1,18 @@
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: bitcoind-podmonitor
-  namespace: openlsp
-  labels:
-    release: kube-prom-stack
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: bitcoind
-  podMetricsEndpoints:
-  - port: metrics
-    interval: 10s
-    path: /metrics
+# apiVersion: monitoring.coreos.com/v1
+# kind: PodMonitor
+# metadata:
+#   name: bitcoind-podmonitor
+#   namespace: openlsp
+#   labels:
+#     release: kube-prometheus-stack
+# spec:
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/name: bitcoind
+#   podMetricsEndpoints:
+#   - port: metrics
+#     interval: 10s
+#     path: /metrics
 
 ---
 
@@ -21,9 +21,9 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: bitcoind-servicemonitor
-  namespace: openlsp
+  namespace: bitcoind
   labels:
-    release: kube-prom-stack
+    release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:

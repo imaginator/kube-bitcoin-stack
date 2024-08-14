@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bitcoind
-  namespace: openlsp
+  namespace: bitcoind
   labels:
     app.kubernetes.io/name: bitcoind
 data:
@@ -17,7 +17,7 @@ data:
     rpcbind=0.0.0.0
     rpcport=8332
     rpcuser=rpcuser
-    rpcpassword=rpcpassword
+    # rpcpassword is setup using using a secret + initContainer
     server=1
     shrinkdebugfile=1
     txindex=1
