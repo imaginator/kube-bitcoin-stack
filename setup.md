@@ -28,10 +28,6 @@ sudo mkdir -p /var/lib/rancher
 sudo mount -a
 ```
 
-### Namespaces
-
-All services are deployed into their own namespace.
-
 ### Boot Options
 
 Most Pi distros don't ship with cgroups enabled. This is required for Kubernetes to work. In `/boot/firmware/cmdline.txt` and add the following settings at the end of the line, not in a new line, but at the end of the first line:
@@ -40,7 +36,15 @@ Most Pi distros don't ship with cgroups enabled. This is required for Kubernetes
 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
 ```
 
-### Install K3s:
+### Add a recent blockchain copy
+
+Save time by copying the blockchain from another node. You will need `block`, `chainstate` and `indexes` directories.
+
+```bash
+rsync -av --delete --dry-run blocks indexes chainstate username@hostname:/srv/blockchain/
+```
+
+## Kubernetes (K3S) setup
 
 ```bash
 echo ip_conntrack | sudo tee -a /etc/modules
@@ -58,15 +62,9 @@ kubectl get pods --all-namespaces
 # add instructions for ipv6 ingress
 ```
 
-### Add a recent blockchain copy
 
-Save time by copying the blockchain from another node. You will need `block`, `chainstate` and `indexes` directories.
 
-```bash
-rsync -av --delete --dry-run blocks indexes chainstate username@lspnode:/srv/blockchain/
-```
-
-### configure remote kubectl
+### configure remote `kubectl`
 
 ```bash
 # copy the config to your local machine
@@ -80,14 +78,13 @@ source <(kubectl completion bash)
 kubectl get nodes
 ```
 
-alternatively [Lens](https://docs.k8slens.dev/) makes a nice Kubernetes GUI
+alternativly [Lens](https://docs.k8slens.dev/) makes a nice Kubernetes GUI
 
-## deplay to kubernetes
+## Deploy to Kubernetes
 
 At this point our cluster should all be working and we can actually deploy the services.
 
 ```bash
-kubectl apply -f deployments/_namespace
 kubectl apply -f deployments/bitcoind
 kubectl apply -f deployments/lnd
 ```
@@ -125,26 +122,21 @@ get the grafana password with
 kubectl -n observability get secrets kube-prom-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo 
 ```
 
-Watch it with:
+Watch it with
+
 ```bash
 kubectl port-forward -n observability services/kube-prom-stack-grafana --address 0.0.0.0 3000:80 # grafana
-
 kubectl port-forward -n observability service/prometheus-k8s --address 0.0.0.0 9090 # prometheus
 kubectl -n observability get secrets kube-prom-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo # grafana password
-
 ```
 
 
 ### Grafana
 
-```bash
-kubectl port-forward -n observability service/grafana --address 0.0.0.0 3000:3000 
-
 Prometheus config:
-
+```bash
 kubectl -n observability get secret prometheus-kube-prom-stack-kube-prome-prometheus -o json  | jq -r '.data["prometheus.yaml.gz"]' | base64 -d | gunzip 
 kubectl get podmonitor -n openlsp
-
 ```
 
 ### Useful commands
@@ -158,24 +150,14 @@ journalctl -fxeu k3s.service
 Bitcoind pod shell
 
 ```bash
-kubectl exec -i -t -n openlsp bitcoind-0 -c bitcoind -- sh -c "clear; (bash || ash || sh)"
+kubectl exec -i -t -n bitcoind bitcoind-0 -c bitcoind -- sh -c "clear; (bash || ash || sh)"
 bitcoin-cli getblockhash 277316
 bitcoin-cli getblock 0000000000000001b6b9a13b095e96db41c4a928b97ef2d944a9b31b2cc7bdc4 
 bitcoin-cli getblockchaininfo
 ```
 
-
 LND pod shell
 
 ```bash
-kubectl exec -i -t -n openlsp lnd-0 -c lnd -- sh -c "clear; (bash || ash || sh)"
-
+kubectl exec -i -t -n lnd lnd-0 -c lnd -- sh -c "clear; (bash || ash || sh)"
 ```
-
-
-
-
-Todo: 
-
-bitcoind ingress - permit inbound connections
-lnd ingress - permit inbound connections
