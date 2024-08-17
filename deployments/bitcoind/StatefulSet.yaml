@@ -14,7 +14,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 4b3dbe3b2359b67ce4cb1fbfdbe79b40d28e8d96f316268e004c64b67df49419
         prometheus.io/path: /metrics
         prometheus.io/port: "3000"
         prometheus.io/scrape: "true"
@@ -22,26 +21,27 @@ spec:
         app.kubernetes.io/name: bitcoind
     spec:
       serviceAccountName: bitcoind
-      securityContext:
-        fsGroup: 2000
       initContainers:
-        - name: copy-bitcoind-config
+        # Create the bitcoin.conf file from a ConfigMap template
+        - name: create-bitcoin-conf
           image: busybox
-          command:
-          - 'sh'
-          - '-c'
-          - |
-            cat <<EOF > /data/.bitcoin/bitcoin.conf
-            rpcpassword=$(cat /rpcpassword/password)
-            $(cat /configmap/bitcoin.conf)
-            EOF
-          volumeMounts:
-            - name: configmap
-              mountPath: /configmap
+          imagePullPolicy: IfNotPresent
+          env:
             - name: rpcpassword
-              mountPath: /rpcpassword
-            - name: config
-              mountPath: /data/.bitcoin/
+              valueFrom:
+                secretKeyRef:
+                  name: rpcpassword
+                  key: password
+          command:
+            - sh
+            - -c
+            - sed "s/\${rpcpassword}/${rpcpassword}/g" < /template/bitcoin.conf.template > /generated/bitcoin.conf  && echo "created bitcoin.conf" || echo "failed to create bitcoin.conf"
+          volumeMounts:
+            - name: ephemeral-directory
+              mountPath: /generated
+            - name: bitcoind-config-template
+              mountPath: /template/
+
       containers:
         - name: bitcoind
           securityContext:
@@ -52,8 +52,8 @@ spec:
           image: "lncm/bitcoind:v25.0"
           imagePullPolicy: IfNotPresent
           env:
-          - name: MALLOC_ARENA_MAX
-            value: "1"
+            - name: MALLOC_ARENA_MAX
+              value: "1"
           ports:
             - name: rpc
               containerPort: 8332
@@ -64,87 +64,46 @@ spec:
             - name: zmqpubrawblock
               containerPort: 28332
           volumeMounts:
-            - name: data
-              mountPath: /data/.bitcoin
-            - name: config
+            - name: bitcoind-data-dir
+              mountPath: /data/.bitcoin/
+            - name: ephemeral-directory
               mountPath: /data/.bitcoin/bitcoin.conf
               subPath: bitcoin.conf
-          startupProbe:
-            exec:
-              command:
-                - bitcoin-cli
-                - -conf=/data/.bitcoin/bitcoin.conf
-                - -rpcwait
-                - getblockcount # getblcockcount is a fast command that will return the block height
-            failureThreshold: 10
-            periodSeconds: 10
-            timeoutSeconds: 60
-          livenessProbe:
-            exec:
-              command:
-                - bitcoin-cli
-                - -conf=/data/.bitcoin/bitcoin.conf
-                - -rpcwait
-                - getblockcount
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            failureThreshold: 10
-            timeoutSeconds: 10
           readinessProbe:
-            exec:
-              command:
-                - bitcoin-cli
-                - -conf=/data/.bitcoin/bitcoin.conf
-                - -rpcwait
-                - getblockcount
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 60
-          resources: {}
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - bitcoin-cli
-                  - -conf=/data/.bitcoin/bitcoin.conf
-                  - stop
-
+            tcpSocket:
+              port: rpc # Check if the RPC port is open
+              
+        - name: metrics-exporter
+          image: jvstein/bitcoin-prometheus-exporter:v0.6.0
           imagePullPolicy: IfNotPresent
           env:
-          - name: BITCOIN_RPC_HOST
-            value: 127.0.0.1
-          - name: BITCOIN_RPC_USER
-            value: rpcuser
-          - name: BITCOIN_RPC_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: bitcoind-rpcpassword
-                key: password
-          - name: METRICS_PORT
-            value: "3000"
-          - name: BITCOIN_RPC_PORT
-            value: "8332"
+            - name: BITCOIN_RPC_HOST
+              value: 127.0.0.1
+            - name: BITCOIN_RPC_USER
+              value: rpcuser
+            - name: BITCOIN_RPC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rpcpassword
+                  key: password
+            - name: METRICS_PORT
+              value: "3000"
+            - name: BITCOIN_RPC_PORT
+              value: "8332"
           ports:
-          - name: metrics
-            containerPort: 3000
-            protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: metrics
-          readinessProbe:
-            httpGet:
-              path: /
-              port: metrics
+            - name: metrics
+              containerPort: 3000
+              protocol: TCP
+
       volumes:
-        - name: config
-          emptyDir: {}
-        - name: rpcpassword
-          secret:
-            secretName: bitcoind-rpcpassword
-        - name: configmap
-          configMap:
-            name: bitcoind
-        - name: data
+        - name: bitcoind-data-dir
           persistentVolumeClaim:
             claimName: bitcoin-pvc-bitcoind
+        - name: ephemeral-directory
+          emptyDir: {}
+        - name: bitcoind-config-template
+          configMap:
+            name: bitcoind-config-template
+            items:
+              - key: bitcoin.conf.template # key is the file name
+                path: bitcoin.conf.template # path is the file name in the volume
