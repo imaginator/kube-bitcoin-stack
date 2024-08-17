@@ -72,35 +72,43 @@ spec:
           startupProbe:
             exec:
               command:
-              - bitcoin-cli
-              - -conf=/data/.bitcoin/bitcoin.conf
-              - getblockchaininfo
-            failureThreshold: 30
+                - bitcoin-cli
+                - -conf=/data/.bitcoin/bitcoin.conf
+                - -rpcwait
+                - getblockcount # getblcockcount is a fast command that will return the block height
+            failureThreshold: 10
             periodSeconds: 10
-            timeoutSeconds: 10
+            timeoutSeconds: 60
           livenessProbe:
             exec:
               command:
-              - bitcoin-cli
-              - -conf=/data/.bitcoin/bitcoin.conf
-              - getblockchaininfo
-            initialDelaySeconds: 300
+                - bitcoin-cli
+                - -conf=/data/.bitcoin/bitcoin.conf
+                - -rpcwait
+                - getblockcount
+            initialDelaySeconds: 60
             periodSeconds: 10
-            failureThreshold: 6
+            failureThreshold: 10
             timeoutSeconds: 10
           readinessProbe:
             exec:
               command:
-              - bitcoin-cli
-              - -conf=/data/.bitcoin/bitcoin.conf
-              - getblockchaininfo
+                - bitcoin-cli
+                - -conf=/data/.bitcoin/bitcoin.conf
+                - -rpcwait
+                - getblockcount
             periodSeconds: 10
-            successThreshold: 6
-            timeoutSeconds: 10
-          resources:
-            {}
-        - name: exporter
-          image: jvstein/bitcoin-prometheus-exporter:v0.7.0
+            successThreshold: 1
+            timeoutSeconds: 60
+          resources: {}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - bitcoin-cli
+                  - -conf=/data/.bitcoin/bitcoin.conf
+                  - stop
+
           imagePullPolicy: IfNotPresent
           env:
           - name: BITCOIN_RPC_HOST
