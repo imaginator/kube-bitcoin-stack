@@ -41,7 +41,6 @@ spec:
               mountPath: /generated
             - name: bitcoind-config-template
               mountPath: /template/
-
       containers:
         - name: bitcoind
           securityContext:
@@ -69,16 +68,17 @@ spec:
             - name: ephemeral-directory
               mountPath: /data/.bitcoin/bitcoin.conf
               subPath: bitcoin.conf
-          readinessProbe:
+          livenessProbe:
             tcpSocket:
-              port: rpc # Check if the RPC port is open
-              
+              port: rpc
         - name: metrics-exporter
           image: jvstein/bitcoin-prometheus-exporter:v0.6.0
           imagePullPolicy: IfNotPresent
           env:
             - name: BITCOIN_RPC_HOST
               value: 127.0.0.1
+            - name: BITCOIN_RPC_PORT
+              value: "8332"
             - name: BITCOIN_RPC_USER
               value: rpcuser
             - name: BITCOIN_RPC_PASSWORD
@@ -88,8 +88,6 @@ spec:
                   key: password
             - name: METRICS_PORT
               value: "3000"
-            - name: BITCOIN_RPC_PORT
-              value: "8332"
           ports:
             - name: metrics
               containerPort: 3000
