@@ -1,29 +1,11 @@
 apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: bitcoind-podmonitor
-  namespace: openlsp
-  labels:
-    release: kube-prom-stack
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: lnd
-  podMetricsEndpoints:
-  - port: metrics
-    interval: 10s
-    path: /metrics
-
----
-
-# https://nuculabs.dev/p/how-to-create-a-servicemonitor-in-microk8s-observability-tutorial
-apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: bitcoind-servicemonitor
-  namespace: openlsp
+  namespace: lnd
   labels:
     release: kube-prom-stack
+    app.kubernetes.io/part-of: kube-bitcoin  
 spec:
   selector:
     matchLabels:

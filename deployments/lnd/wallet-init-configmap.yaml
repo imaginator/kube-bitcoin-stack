@@ -4,8 +4,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: lnd-wallet-init
-  namespace: openlsp
+  namespace: lnd
   labels:
+    app.kubernetes.io/part-of: kube-bitcoin  
     app.kubernetes.io/name: lnd
 data:
   walletInit.exp: |

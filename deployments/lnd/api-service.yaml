@@ -1,11 +1,11 @@
----
 apiVersion: v1
 kind: Service
 metadata:
   name: lnd
-  namespace: openlsp
+  namespace: lnd
   labels:
     app.kubernetes.io/name: lnd
+    app.kubernetes.io/part-of: kube-bitcoin
 spec:
   type: ClusterIP
   ports:
@@ -15,4 +15,3 @@ spec:
       port: 8080
   selector:
     app.kubernetes.io/name: lnd
-    

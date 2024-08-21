@@ -3,9 +3,10 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: lnd
-  namespace: openlsp
+  namespace: lnd
   labels:
     app.kubernetes.io/name: lnd
+    app.kubernetes.io/part-of: kube-bitcoin  
 spec:
   serviceName: lnd
   selector:
@@ -14,8 +15,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 0f9ba154922f46117d2c5017042bec694f8b1e67d19e81591e44e1f46ee065a1
-        checksum/exportSecrets: ee61b70c39c2ffd33588a7f5fd3c8153ce853a2601fa677bea0ac39846e08b15
         prometheus.io/path: /metrics
         prometheus.io/port: "9092"
         prometheus.io/scrape: "true"
@@ -26,13 +25,13 @@ spec:
       terminationGracePeriodSeconds: 600
       initContainers:
         - name: copy-lnd-config
-          image: "lightninglabs/lnd:v0.16.2-beta"
+          image: "lightninglabs/lnd:v0.18.2-beta"
           command:
           - 'sh'
           - '-c'
           - |
             cat <<EOF > /root/.lnd/lnd.conf
-            bitcoind.rpcpass=$(cat /rpcpassword/password)
+            bitcoind.rpcpass=$(cat /bitcoind-rpcpassword/password)
             $(cat /configmap/lnd.conf)
             EOF
           volumeMounts:
@@ -40,8 +39,8 @@ spec:
               mountPath: /configmap
             - name: config
               mountPath: /root/.lnd/
-            - name: rpcpassword
-              mountPath: /rpcpassword
+            - name: bitcoind-rpcpassword
+              mountPath: /bitcoind-rpcpassword
       containers:
         - name: tor
           image: osminogin/tor-simple
@@ -64,7 +63,8 @@ spec:
             EOF
             exec tor -f ~/torrc
         - name: export-secrets
-          image: "us.gcr.io/galoy-org/lnd-sidecar@sha256:e3ad153f0fe8dc8418c0e0c3cc6baf74ecc2a6b7c1436a6154e52330eb02167f"
+          image: busybox
+#          image: "us.gcr.io/galoy-org/lnd-sidecar"
           command: ['/bin/sh']
           args:
           - '-c'
@@ -146,7 +146,7 @@ spec:
             defaultMode: 0777
         - name: config
           emptyDir: {}
-        - name: rpcpassword
+        - name: bitcoind-rpcpassword
           secret:
             secretName: bitcoind-rpcpassword
         - name: configmap

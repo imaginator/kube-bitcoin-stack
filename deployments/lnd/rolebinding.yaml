@@ -3,9 +3,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: lnd
-  namespace: openlsp
+  namespace: lnd
   labels:
     app.kubernetes.io/name: lnd
+    app.kubernetes.io/part-of: kube-bitcoin  
 roleRef:
   kind: Role
   name: lnd
