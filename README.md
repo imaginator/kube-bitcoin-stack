@@ -55,6 +55,10 @@ kubectl get deployments --all-namespaces
 
 4. **View Metrics**
 
+All kube-bitcoin-stack services come with a Prometheus Exporter and Grafana Dashboard
+
+![Bitcoind Dashboard 4 Panels](docs/images/metrics-bitcoind-4-panels.png)
+
 Access the Grafana dashboard for metrics and monitoring:
 
 ```bash
