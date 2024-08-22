@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bitcoin-pv-filesystem-fulcrum
+  namespace: fulcrum
+  labels:
+    app.kubernetes.io/name: fulcrum
+    app.kubernetes.io/part-of: kube-bitcoin-stack
+spec:
+  capacity:
+    storage: 750Gi
+  hostPath:
+    path: /srv/k8s/pv/fulcrum
+    type: ""
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem

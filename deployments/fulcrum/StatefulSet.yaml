@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fulcrum
+  namespace: fulcrum
+  labels:
+    app: fulcrum
+    app.kubernetes.io/part-of: kube-bitcoin-stack
+spec:
+  serviceName: "fulcrum"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fulcrum
+  template:
+    metadata:
+      labels:
+        app: fulcrum
+    spec:
+      containers:
+      - name: fulcrum
+        image: cculianu/fulcrum:latest
+        command: ["Fulcrum", "/config/fulcrum.conf"]
+        ports:
+        - containerPort: 50002
+          name: electrum
+        - containerPort: 8080
+          name: web
+        volumeMounts:
+        - name: fulcrum-data-dir
+          mountPath: /data
+        - name: fulcrum-config
+          mountPath: /config/fulcrum.conf
+          subPath: fulcrum.conf
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "4Gi"
+            cpu: "4"
+        env:
+        - name: FULCRUM_NETWORK
+          value: "mainnet"
+        - name: FULCRUM_DATADIR
+          value: "/data"
+        - name: FULCRUM_LOG_LEVEL
+          value: "debug"
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      volumes:
+        - name: fulcrum-data-dir
+          persistentVolumeClaim:
+            claimName: bitcoin-pvc-fulcrum
+        - name: fulcrum-config
+          configMap:
+            name: fulcrum-config

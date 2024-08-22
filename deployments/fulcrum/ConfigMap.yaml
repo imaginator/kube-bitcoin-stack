@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fulcrum-config
+  namespace: fulcrum
+  labels:
+    app.kubernetes.io/part-of: kube-bitcoin-stack
+data:
+  fulcrum.conf: |
+    network = mainnet
+    datadir = /data
+    log-level = info
+    
+    # This is the bitcoind RPC password you specified in your bitcoind .conf file.
+    rpcpassword = tellnoone
+    
+    rpcuser = rpcuser
+
+    # connect to the internal bitcoind service DNS name <service-name>.<namespace>.svc.cluster.local
+    bitcoind = bitcoind.bitcoind.svc.cluster.local:8332
+
+    # RPi optimizations
+    bitcoind_timeout = 600
+    bitcoind_clients = 1
+    worker_threads = 1
+    db_mem = 1024.0
+
+    # 4GB RAM (default)
+    db_max_open_files = 200
+    fast-sync = 1024
