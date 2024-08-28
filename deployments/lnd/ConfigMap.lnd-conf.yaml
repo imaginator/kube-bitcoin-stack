@@ -13,9 +13,10 @@ data:
     restlisten=0.0.0.0:8080
     rpclisten=0.0.0.0:10009
     listen=0.0.0.0:9735
+    listen=[::1]:9736
     prometheus.listen=0.0.0.0:9092
     bitcoin.active=true
-    bitcoin.node=bitcoind
+    bitcoin.node=neutrino
     bitcoind.rpcuser=rpcuser
     bitcoind.zmqpubrawblock=tcp://bitcoind:28332
     bitcoind.zmqpubrawtx=tcp://bitcoind:28333
@@ -36,3 +37,9 @@ data:
     tor.skip-proxy-for-clearnet-targets=true
     tlsextradomain=lnd
     bitcoin.mainnet=true
+        
+    [neutrino]
+    neutrino.connect=btcd0.lightning.engineering
+    neutrino.useragentname=kube-bitcoin-stack
+
+

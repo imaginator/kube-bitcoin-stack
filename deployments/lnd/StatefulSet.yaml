@@ -157,7 +157,7 @@ spec:
             secretName: lnd-pass
         - name: lnd-storage
           persistentVolumeClaim:
-            claimName: bitcoin-pvc-lnd
+            claimName: lnd
         - name: tor-cookie-auth
           emptyDir: {}
       affinity:
