@@ -4,5 +4,5 @@ metadata:
   name: lnd
   labels:
     app.kubernetes.io/name: bitcoind
-    app.kubernetes.io/part-of: kube-bitcoin
+    app.kubernetes.io/part-of: kube-bitcoin-stack
 

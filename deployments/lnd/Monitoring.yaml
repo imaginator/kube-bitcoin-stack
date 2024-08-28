@@ -5,7 +5,7 @@ metadata:
   namespace: lnd
   labels:
     release: kube-prom-stack
-    app.kubernetes.io/part-of: kube-bitcoin  
+    app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   selector:
     matchLabels:

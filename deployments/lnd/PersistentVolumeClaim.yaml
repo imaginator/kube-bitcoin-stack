@@ -5,7 +5,7 @@ metadata:
   namespace: lnd
   labels:
     app.kubernetes.io/name: lnd
-    app.kubernetes.io/part-of: kube-bitcoin  
+    app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   storageClassName: ""
   volumeName: bitcoin-pv-filesystem-lnd

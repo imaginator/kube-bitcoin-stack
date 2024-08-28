@@ -24,6 +24,7 @@ metadata:
   namespace: bitcoind
   labels:
     release: kube-prometheus-stack
+    app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   selector:
     matchLabels:

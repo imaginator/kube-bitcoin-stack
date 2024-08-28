@@ -4,7 +4,7 @@ metadata:
   name: bitcoin-pv-filesystem-lnd
   namespace: lnd
   labels:
-    app.kubernetes.io/part-of: kube-bitcoin
+    app.kubernetes.io/part-of: kube-bitcoin-stack
     app.kubernetes.io/name: lnd
 spec:
   capacity:

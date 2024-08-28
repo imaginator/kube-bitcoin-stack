@@ -6,7 +6,7 @@ metadata:
   name: lnd-wallet-init
   namespace: lnd
   labels:
-    app.kubernetes.io/part-of: kube-bitcoin  
+    app.kubernetes.io/part-of: kube-bitcoin-stack
     app.kubernetes.io/name: lnd
 data:
   walletInit.exp: |
@@ -23,7 +23,7 @@ data:
     # etc.) and devices discard or ignore keystrokes that arrive "too
     # quickly" after prompts.  If you find your new script hanging up at
     # one spot, try adding a short sleep just before the previous send.
-    # Setting "force_conservative" to 1 (see below) makes Expect do this
+    # Setting "force_conservative" to 1 (see below) makes Expect do thislens
     # automatically - pausing briefly before sending each character.  This
     # pacifies every program I know of.  The -c flag makes the script do
     # this in the first place.  The -C flag allows you to define a

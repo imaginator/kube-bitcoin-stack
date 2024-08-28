@@ -5,6 +5,7 @@ metadata:
   namespace: bitcoind
   labels:
     app.kubernetes.io/name: bitcoind
+    app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   serviceName: bitcoind
   replicas: 1
