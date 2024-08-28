@@ -8,11 +8,15 @@ metadata:
     app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   ports:
-  - port: 50002
+  - port: 50001
     name: electrum
-    targetPort: 50002
+    targetPort: 50001
   - port: 8080
-    name: web
+    name: admin
     targetPort: 8080
+  - port: 8081
+    name: stats
+    targetPort: 8081
+
   selector:
     app: fulcrum

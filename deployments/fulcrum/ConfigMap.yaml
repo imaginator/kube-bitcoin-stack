@@ -19,6 +19,12 @@ data:
     # connect to the internal bitcoind service DNS name <service-name>.<namespace>.svc.cluster.local
     bitcoind = bitcoind.bitcoind.svc.cluster.local:8332
 
+    # admin interface used for livenessProbe
+    admin = 0.0.0.0:8080
+
+    # stats port on used for startupProbe and readinessProbe
+    stats = 0.0.0.0:8881
+
     # RPi optimizations
     bitcoind_timeout = 600
     bitcoind_clients = 1

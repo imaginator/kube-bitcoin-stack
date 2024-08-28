@@ -8,10 +8,10 @@ metadata:
     app.kubernetes.io/part-of: kube-bitcoin-stack
 spec:
   storageClassName: ""
-  volumeName: bitcoin-pv-filesystem-fulcrum
+  volumeName: fulcrum
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: "750Gi"
+      storage: "150Gi"

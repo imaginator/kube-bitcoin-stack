@@ -18,50 +18,46 @@ spec:
         app: fulcrum
     spec:
       containers:
-      - name: fulcrum
-        image: cculianu/fulcrum:latest
-        command: ["Fulcrum", "/config/fulcrum.conf"]
-        ports:
-        - containerPort: 50002
-          name: electrum
-        - containerPort: 8080
-          name: web
-        volumeMounts:
-        - name: fulcrum-data-dir
-          mountPath: /data
-        - name: fulcrum-config
-          mountPath: /config/fulcrum.conf
-          subPath: fulcrum.conf
-        resources:
-          requests:
-            memory: "4Gi"
-            cpu: "2"
-          limits:
-            memory: "4Gi"
-            cpu: "4"
-        env:
-        - name: FULCRUM_NETWORK
-          value: "mainnet"
-        - name: FULCRUM_DATADIR
-          value: "/data"
-        - name: FULCRUM_LOG_LEVEL
-          value: "debug"
-        livenessProbe:
-          httpGet:
-            path: /status
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /status
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 30
+        - name: fulcrum
+          image: cculianu/fulcrum:latest
+          command: ["Fulcrum", "/config/fulcrum.conf"]
+          ports:
+            - containerPort: 50001
+              name: electrum
+            - containerPort: 8080
+              name: admin
+            - containerPort: 8081
+              name: stats
+          volumeMounts:
+            - name: fulcrum-data-dir
+              mountPath: /data
+            - name: fulcrum-config
+              mountPath: /config/fulcrum.conf
+              subPath: fulcrum.conf
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "2"
+            limits:
+              memory: "2Gi"
+              cpu: "4"
+          startupProbe:
+          
+            tcpSocket:
+              port: stats
+            failureThreshold: 200
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: admin
+              # allow 10h for initial sync
+            initialDelaySeconds: 36000
+            periodSeconds: 10
+            failureThreshold: 2
       volumes:
         - name: fulcrum-data-dir
           persistentVolumeClaim:
-            claimName: bitcoin-pvc-fulcrum
+            claimName: fulcrum
         - name: fulcrum-config
           configMap:
             name: fulcrum-config

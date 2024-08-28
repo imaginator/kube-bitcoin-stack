@@ -10,7 +10,7 @@ spec:
   capacity:
     storage: 750Gi
   hostPath:
-    path: /srv/k8s/pv/fulcrum
+    path: /srv/kube-bitcoind-stack/fulcrum
     type: ""
   accessModes:
     - ReadWriteOnce
