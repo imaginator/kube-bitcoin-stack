@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: bitcoin-pvc-bitcoind
+  name: bitcoind
   namespace: bitcoind
   labels:
     app.kubernetes.io/name: bitcoind 
 spec:
   storageClassName: ""
-  volumeName: bitcoin-pv-filesystem-bitcoind
+  volumeName: bitcoind
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
-      storage: "750Gi"
+      storage: "1024Gi"

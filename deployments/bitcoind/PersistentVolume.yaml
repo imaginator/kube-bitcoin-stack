@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: bitcoin-pv-filesystem-bitcoind
+  name: bitcoind
   namespace: bitcoind
   labels:
     app.kubernetes.io/name: bitcoind
 spec:
   capacity:
-    storage: 750Gi
+    storage: 1024Gi
   hostPath:
-    path: /srv/blockchain
+    path: /srv/kube-bitcoin-stack/bitcoind
     type: ""
   accessModes:
     - ReadWriteOnce

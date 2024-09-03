@@ -31,7 +31,7 @@ spec:
             - name: rpcpassword
               valueFrom:
                 secretKeyRef:
-                  name: rpcpassword
+                  name: bitcoind-rpcpassword
                   key: password
           command:
             - sh
@@ -49,20 +49,24 @@ spec:
             runAsGroup: 3000
             runAsNonRoot: true
             runAsUser: 1000
-          image: "lncm/bitcoind:v25.0"
+          image: "docker.io/lncm/bitcoind:v27.0"
           imagePullPolicy: IfNotPresent
-          env:
-            - name: MALLOC_ARENA_MAX
-              value: "1"
+          lifecycle:
+            preStop:
+              exec:
+                command: 
+                  - sh 
+                  - bitcoin-cli
+                  - stop
           ports:
             - name: rpc
               containerPort: 8332
             - name: p2p
               containerPort: 8333
-            - name: zmqpubrawtx
-              containerPort: 28333
             - name: zmqpubrawblock
               containerPort: 28332
+            - name: zmqpubrawtx
+              containerPort: 28333
           volumeMounts:
             - name: bitcoind-data-dir
               mountPath: /data/.bitcoin/
@@ -85,7 +89,7 @@ spec:
             - name: BITCOIN_RPC_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rpcpassword
+                  name: bitcoind-rpcpassword
                   key: password
             - name: METRICS_PORT
               value: "3000"
@@ -93,11 +97,10 @@ spec:
             - name: metrics
               containerPort: 3000
               protocol: TCP
-
       volumes:
         - name: bitcoind-data-dir
           persistentVolumeClaim:
-            claimName: bitcoin-pvc-bitcoind
+            claimName: bitcoind
         - name: ephemeral-directory
           emptyDir: {}
         - name: bitcoind-config-template
