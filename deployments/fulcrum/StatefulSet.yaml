@@ -34,25 +34,18 @@ spec:
             - name: fulcrum-config
               mountPath: /config/fulcrum.conf
               subPath: fulcrum.conf
-          resources:
-            requests:
-              memory: "1Gi"
-              cpu: "2"
-            limits:
-              memory: "2Gi"
-              cpu: "4"
-          startupProbe:
-          
+          resources: {}
+          readinessProbe:
             tcpSocket:
-              port: stats
-            failureThreshold: 200
-            periodSeconds: 10
+              port: electrum
+            initialDelaySeconds: 36000
+            periodSeconds: 30
+            failureThreshold: 10
           livenessProbe:
             tcpSocket:
-              port: admin
-              # allow 10h for initial sync
-            initialDelaySeconds: 36000
+              port: stats
             periodSeconds: 10
+            initialDelaySeconds: 36000
             failureThreshold: 2
       volumes:
         - name: fulcrum-data-dir

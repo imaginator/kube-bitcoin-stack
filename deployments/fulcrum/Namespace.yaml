@@ -4,3 +4,4 @@ metadata:
   name: fulcrum
   labels:
     app.kubernetes.io/name: fulcrum
+    app.kubernetes.io/part-of: kube-bitcoin-stack
