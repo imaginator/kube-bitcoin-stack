@@ -9,17 +9,16 @@ data:
   bitcoin.conf.template: |-
     bind=0.0.0.0
     blockfilterindex=1
-    debug=mempool
-    debug=rpc
-    disable-wallet=1
+    disablewallet=1
+    listenonion=0
+    nodebuglogfile=1
     printtoconsole=1
     rpcallowip=0.0.0.0/0
     rpcbind=0.0.0.0
-    rpcport=8332
-    rpcuser=rpcuser
     rpcpassword=${rpcpassword}
+    rpcuser=rpcuser
     server=1
-    shrinkdebugfile=1
     txindex=1
+    uacomment=kube-bitcoin-stack
     zmqpubrawblock=tcp://0.0.0.0:28332
     zmqpubrawtx=tcp://0.0.0.0:28333
