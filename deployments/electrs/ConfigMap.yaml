@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: electrs-config
+  namespace: electrs
+  labels:
+    app.kubernetes.io/part-of: kube-bitcoin-stack
+data:
+  config.toml: |
+    daemon_p2p_addr = "bitcoind.bitcoind.svc.cluster.local:8333"
+    daemon_rpc_addr = "127.0.0.1:8332"
+    daemon_rpc_addr = "bitcoind.bitcoind.svc.cluster.local:8332"
+    electrum_rpc_addr = "0.0.0.0:50001"
+    jsonrpc_import = true
+    jsonrpc_sync = true
+    log_filters = "DEBUG"
+    network = "mainnet"

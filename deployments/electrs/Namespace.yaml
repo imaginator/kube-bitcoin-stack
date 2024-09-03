@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: electrs
+  labels:
+    app.kubernetes.io/name: electrs
+    app.kubernetes.io/part-of: kube-bitcoin-stack

@@ -1,0 +1,30 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: electrs-ingress
+#   namespace: electrs
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# spec:
+#   rules:
+#   - host: electrs.example.com  # Replace with your domain
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: electrs
+#             port:
+#               number: 8080
+#   - host: electrum.electrs.example.com  # Replace with your domain
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: electrs
+#             port:
+#               number: 50002

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: electrs
+  namespace: electrs
+  labels:
+    app: electrs
+    app.kubernetes.io/part-of: kube-bitcoin-stack
+spec:
+  serviceName: "electrs"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: electrs
+  template:
+    metadata:
+      labels:
+        app: electrs
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+      - name: electrs
+        image: mempool/electrs
+        command:
+          - "electrs"
+          - "--lightmode"
+          - "--daemon-rpc-addr"
+          - "bitcoind.bitcoind.svc.cluster.local:8332"
+          - "--jsonrpc-import"
+          - "--cookie"
+          - "rpcuser:tellnoone"
+          - "--monitoring-addr"
+          - "0.0.0.0:4224"
+          - "-vvv"
+        env:
+        - name: RUST_BACKTRACE
+          value: "full"
+        - name: DEBUG
+          value: "verbose"
+        ports:
+        - containerPort: 50001
+          name: electrum
+        - containerPort: 4224
+          name: metrics
+        volumeMounts:
+        - name: data
+          mountPath: /db
+        livenessProbe:
+          httpGet:
+            path: /
+            port: metrics
+        resources: {}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: electrs
